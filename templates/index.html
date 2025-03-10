@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Baymax - Healthcare Companion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <style>
+      /* Baymax Theme Styles */
+      body {
+        background-color: #f0f0f0; /* Soft gray background */
+        font-family: 'Nunito', sans-serif; /* Rounded, friendly font */
+      }
+
+      .navbar {
+        background-color: #ffffff; /* White navbar */
+        border-bottom: 2px solid #4a7d9d; /* Darker Baymax blue accent */
+      }
+
+      .navbar-brand {
+        color: #4a7d9d !important; /* Darker Baymax blue for the brand */
+        font-weight: bold;
+      }
+
+      .logo img {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+      }
+
+      .container {
+        background-color: #ffffff; /* White container */
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+      }
+
+      h1 {
+        color: #4a7d9d; /* Darker Baymax blue for headings */
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .form-control {
+        border-radius: 10px; /* Rounded input fields */
+        border: 1px solid #4a7d9d; /* Darker Baymax blue border */
+      }
+
+      .btn-primary {
+        background-color: #4a7d9d; /* Darker Baymax blue button */
+        border: none;
+        border-radius: 10px;
+        padding: 10px 20px;
+        width: 100%;
+      }
+
+      .btn-primary:hover {
+        background-color: #3a6d8d; /* Even darker blue on hover */
+      }
+
+      .modal-header {
+        background-color: #4a7d9d; /* Darker Baymax blue for modal headers */
+        color: white;
+      }
+
+      .modal-body {
+        background-color: #ffffff; /* White modal body */
+      }
+
+      .symptoms-dropdown {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid d-flex justify-content-center align-items-center">
+          <!-- Title Part 1 -->
+          <span class="navbar-brand mb-0 h1" style="font-size: 2.5rem; font-weight: bold; margin-right: 0.5rem;">Baymax</span>
+          
+          <!-- Logo in the middle -->
+          <div class="logo mx-1">
+            <img src="{{ url_for('static', filename='logo.jpeg') }}" alt="Baymax Logo" style="width: 70px; height: 70px; border-radius: 50%;">
+          </div>
+          
+          <!-- Title Part 2 -->
+          <span class="navbar-brand mb-0 h1" style="font-size: 2.5rem; font-weight: bold; margin-left: 0.5rem;">HealthCare Companion</span>
+        </div>
+    </nav>
+
+    <!-- Main Form -->
+    <!-- <h1 class="mt-4">Baymax Health Care</h1> -->
+    <div class="container my-4">
+      <form action="/predict" method="post">
+        <div class="form-group">
+          <label for="symptoms" class="form-label">Enter Symptoms (comma-separated):</label>
+          <input type="text" class="form-control" id="symptoms" name="symptoms" placeholder="e.g., itching, cough, fever">
+        </div>
+        <div class="form-group symptoms-dropdown">
+          <label for="symptomsDropdown" class="form-label">Symptoms List:</label>
+          <select class="form-control" id="symptomsDropdown" name="symptomsDropdown" multiple>
+            {% for symptom, _ in symptoms_dict.items() %}
+              <option value="{{ symptom }}">{{ symptom }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <br>
+        <button type="submit" class="btn btn-primary">Predict</button>
+      </form>
+    </div>
+
+    <!-- Results Section -->
+    {% if predicted_disease %}
+    <h1 class="text-center my-4">Our System Results :</h1>
+    <div class="container">
+      <div class="result-container">
+        <!-- Buttons to toggle display -->
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#diseaseModal">Disease</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#descriptionModal">Description</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#precautionModal">Precaution</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#medicationsModal">Medications</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#workoutsModal">Workouts</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#dietsModal">Diets</button>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Modals -->
+    <!-- Disease Modal -->
+    <div class="modal fade" id="diseaseModal" tabindex="-1" aria-labelledby="diseaseModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="diseaseModalLabel">Predicted Disease</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>{{ predicted_disease }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description Modal -->
+    <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="descriptionModalLabel">Description</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>{{ dis_des }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Precaution Modal -->
+    <div class="modal fade" id="precautionModal" tabindex="-1" aria-labelledby="precautionModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="precautionModalLabel">Precaution</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <ul>
+              {% for i in my_precautions %}
+                <li>{{ i }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medications Modal -->
+    <div class="modal fade" id="medicationsModal" tabindex="-1" aria-labelledby="medicationsModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="medicationsModalLabel">Medications</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <ul>
+              {% for i in medications %}
+                <li>{{ i }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workouts Modal -->
+    <div class="modal fade" id="workoutsModal" tabindex="-1" aria-labelledby="workoutsModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="workoutsModalLabel">Workouts</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <ul>
+              {% for i in workout %}
+                <li>{{ i }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diets Modal -->
+    <div class="modal fade" id="dietsModal" tabindex="-1" aria-labelledby="dietsModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="dietsModalLabel">Diets</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <ul>
+              {% for i in my_diet %}
+                <li>{{ i }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+  </body>
+</html>
